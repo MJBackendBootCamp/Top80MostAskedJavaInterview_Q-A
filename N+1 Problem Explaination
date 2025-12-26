@@ -1,0 +1,34 @@
+List<Order> orders = session.createQuery("from Order", Order.class).list();
+
+for (Order order : orders) {
+    System.out.println(order.getCustomer().getName());
+}
+SQL behavior (problematic)
+Load all orders
+
+sql
+Copy code
+SELECT * FROM orders;
+For each order, load its customer
+
+sql
+Copy code
+SELECT * FROM customer WHERE id = ?;   -- runs N times
+
+If there are 10 orders, total queries = 11 (1 + 10)
+n+1 Problem - If there are 1000 orders, total queries = 1001 😬
+
+
+1. Fetch Join (Best & Most Common Solution)
+SELECT o FROM Order o JOIN FETCH o.customer
+
+
+Soln:
+
+Hibernate loads Order and Customer in one SQL query
+
+No extra queries inside the loop
+
+SELECT o.*, c.*
+FROM orders o
+JOIN customer c ON o.customer_id = c.id;
